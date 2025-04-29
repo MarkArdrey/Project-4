@@ -53,21 +53,18 @@ void* messageListener(void *arg) {
 
 	int listener;
 	struct message requestLine;
-	listener = open(uName, O_RDONLY); //opens listener for uName, and read only
+	//listener = open(uName, O_RDONLY); //opens listener for uName, and read only
 	signal(SIGPIPE, SIG_IGN); //sigpipe and sig ignore are used as signal flags
-	while(1)
-	{
-		//checks if the read is within the sizeof
-		if (read(listener, &requestLine, sizeof(struct message)) != sizeof(struct message))
-		{
-			continue;
+
+	while (1) {
+		listener = open(uName, O_RDONLY);
+	
+		while (read(listener, &requestLine, sizeof(struct message)) == sizeof(struct message)) {
+			printf("Incoming message from %s: %s\n", requestLine.source, requestLine.msg);
 		}
-
-		//prints status line
-		printf("Incoming message from %s: %s\n", requestLine.source, requestLine.msg);
+	
+		close(listener);
 	}
-
-	close(listener);
 	pthread_exit((void*)0);
 }
 
@@ -100,8 +97,8 @@ int main(int argc, char **argv) {
     // TODO:
     // create the message listener thread
 
-	pthread_t threadID;
-	pthread_create(&threadID, NULL, messageListener, NULL);
+	pthread_t tid;
+	pthread_create(&tid, NULL, messageListener, NULL);
 
     while (1) {
 
@@ -140,23 +137,25 @@ int main(int argc, char **argv) {
 		char *target, *message;
 		char temp[256];
 		strcpy(temp, line2);
-		strcpy(temp, " ");
+
+		strtok(temp, " ");
 		target = strtok(NULL, " ");
-		if (target != NULL) //no argument
+
+		if (target != NULL) 
 		{
-			message = strtok(NULL, "");
-			if (message == NULL)
+ 		   	message = strtok(NULL, ""); // get rest of the line
+ 		   	if (message == NULL) 
+		   	{
+  		      printf("sendmsg: you have to enter a message\n");
+	  		} 
+			else 
 			{
-				printf("sendmsg: you have to enter a message\n");
-			}
-			else
-			{
-				sendmsg(uName, target, message);
-			}
-		}
-		else
+  		      sendmsg(uName, target, message);
+  		  	}
+		} 
+		else 
 		{
-			printf("sendmsg: you have to enter a message\n");
+	   	 	printf("sendmsg: you have to specify target user\n");
 		}
 
 		continue;

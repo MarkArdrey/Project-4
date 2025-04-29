@@ -32,7 +32,7 @@ int main() {
 		// TODO:
 		// read requests from serverFIFO
 
-		if (read(server, NULL, sizeof(struct message)) != sizeof(struct message))
+		if (read(server, &req, sizeof(struct message)) != sizeof(struct message))
 		{
 			continue;
 		}
